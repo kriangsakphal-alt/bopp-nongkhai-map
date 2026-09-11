@@ -1,0 +1,22 @@
+{
+  "source": "https://info.bopp.go.th",
+  "areas": [
+    {
+      "area": "139",
+      "name": "สพป.หนองคาย เขต 1",
+      "expected": 152
+    },
+    {
+      "area": "140",
+      "name": "สพป.หนองคาย เขต 2",
+      "expected": 104
+    },
+    {
+      "area": "26",
+      "name": "สพม.หนองคาย",
+      "expected": 31
+    }
+  ],
+  "count": 287,
+  "schools": []
+}

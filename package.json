@@ -1,0 +1,8 @@
+{
+  "name": "bopp-nongkhai-v4",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "refresh": "node scripts/refresh-bopp.mjs"
+  }
+}

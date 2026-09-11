@@ -1,0 +1,21 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>แผนที่สถานศึกษา จังหวัดหนองคาย — BOPP Cache</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+body{margin:0;font-family:system-ui,"Noto Sans Thai",sans-serif;background:#f5f7fb;color:#172033}.head{padding:14px 18px;background:#0f4c81;color:#fff}.head h1{margin:0;font-size:20px}.head p{margin:4px 0;font-size:13px}.bar{padding:10px;background:#fff;display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid #ddd}input,select,button{padding:8px;border:1px solid #ccd3dd;border-radius:8px;font:inherit}#q{flex:1;min-width:220px}.layout{display:grid;grid-template-columns:390px 1fr;height:calc(100vh - 120px)}#list{overflow:auto;padding:10px;border-right:1px solid #ddd}.card{background:#fff;border:1px solid #e0e5ec;border-radius:9px;padding:10px;margin-bottom:8px}.name{font-weight:700;color:#0f4c81}.meta{font-size:12px;color:#596579;line-height:1.55}.tag{font-size:11px;background:#eef2f7;padding:3px 7px;border-radius:99px;display:inline-block;margin-top:5px}#map{min-height:500px}.status{padding:8px 10px;background:#ecfdf5;color:#047857;font-size:13px}.err{background:#fff7ed;color:#9a3412}@media(max-width:800px){.layout{grid-template-columns:1fr;height:auto}#map{height:55vh}}
+</style></head><body>
+<div class="head"><h1>แผนที่สถานศึกษา จังหวัดหนองคาย</h1><p>ข้อมูลแผนที่อ่านจาก Cache ที่เตรียมไว้ล่วงหน้า ไม่เรียก BOPP ทุกครั้งที่เปิดเว็บ</p></div>
+<div class="bar"><input id="q" placeholder="ค้นหาชื่อ / SMIS / อำเภอ / ตำบล"><select id="area"><option value="">ทุกเขต</option><option value="139">สพป.หนองคาย เขต 1</option><option value="140">สพป.หนองคาย เขต 2</option><option value="26">สพม.หนองคาย</option></select><button onclick="load()">↻ โหลด Cache</button><button onclick="fit()">แสดงทั้งหมด</button></div>
+<div id="status" class="status">กำลังอ่าน Cache...</div><div class="layout"><aside id="list"></aside><main id="map"></main></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script>
+const map=L.map("map").setView([17.88,102.75],10);L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}).addTo(map);
+const layer=L.layerGroup().addTo(map);let schools=[],markers=[];
+const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function render(){let q=document.getElementById("q").value.toLowerCase(),a=document.getElementById("area").value;let rows=schools.filter(s=>(!a||String(s.area)===a)&&(!q||[s.name,s.id,s.district,s.subdistrict].join(" ").toLowerCase().includes(q)));
+document.getElementById("list").innerHTML=rows.map(s=>`<div class="card" onclick="focusS('${s.id}')"><div class="name">${esc(s.name)}</div><div class="meta">${esc(s.district)} ${esc(s.subdistrict)}<br>${s.lat!=null?Number(s.lat).toFixed(8)+", "+Number(s.lng).toFixed(8):"ยังไม่มีพิกัดใน Cache"}</div><span class="tag">${s.lat!=null?"✓ พิกัดจาก BOPP":"! ไม่มีพิกัด"}</span></div>`).join("");
+layer.clearLayers();markers=[];rows.filter(s=>s.lat!=null).forEach(s=>{let m=L.marker([+s.lat,+s.lng]).bindPopup(`<b>${esc(s.name)}</b><br>SMIS: ${s.id}<br>พิกัด: ${+s.lat}, ${+s.lng}<br><a target="_blank" href="https://www.google.com/maps/search/?api=1&query=${s.lat},${s.lng}">ตรวจสอบแผนที่</a>`).addTo(layer);markers.push(m)})}
+function focusS(id){let s=schools.find(x=>x.id===id);if(!s||s.lat==null)return;map.setView([+s.lat,+s.lng],17)}
+function fit(){if(markers.length)map.fitBounds(L.featureGroup(markers).getBounds().pad(.08))}
+async function load(){try{let u="/api/schools";let a=document.getElementById("area").value;if(a)u+="?area="+a;let r=await fetch(u,{cache:"no-store"}),j=await r.json();if(!r.ok||!j.ok)throw Error(j.error||"API error");schools=j.schools||[];render();let c=schools.filter(s=>s.lat!=null).length;document.getElementById("status").textContent=`✓ Cache: ${schools.length} แห่ง | มีพิกัด ${c} แห่ง | สร้างเมื่อ ${j.generatedAt||"ยังไม่ระบุ"}`;fit()}catch(e){document.getElementById("status").className="status err";document.getElementById("status").textContent="โหลด Cache ไม่สำเร็จ: "+e.message}}
+q.oninput=render;area.onchange=load;load();
+</script></body></html>
